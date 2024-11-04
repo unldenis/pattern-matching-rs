@@ -12,10 +12,11 @@ pub enum ScannerError {
         column : usize
     },
 
-    #[error("unexpected character '{character}' at column '{column}'")]
+    #[error("unexpected character '{character}' from '{from}' to '{to}'")]
     UnexpectedCharacter {
         character : char,
-        column : usize
+        from : usize,
+        to : usize
     },
 }
 
@@ -91,7 +92,7 @@ impl<'a> Scanner<'a> {
                     self.add_token(TokenType::IDENTIFIER);
                     return Ok(());
                 }
-                return Err(ScannerError::UnexpectedCharacter { character: c, column: self.start });
+                return Err(ScannerError::UnexpectedCharacter { character: c, from: self.start, to: self.current });
             }
 
         }
