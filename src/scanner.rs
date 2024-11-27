@@ -48,37 +48,77 @@ impl<'a> Scanner<'a> {
             self.scan_token()?;
         }
         
-        self.tokens.push(Token { token_type: TokenType::EOF, lexeme: String::from("\0"), from: self.current, to: self.current });    
         Ok(())
     }
     
     fn scan_token(&mut self) -> Result<(), String> {
-        let c = self.advance().ok_or("no more characters to scan")?;
+        let c = self.advance()?;
         
         match c {
             // '\n' | '\r' => {
             //     self.add_token(TokenType::EOF);
             // }
+            ' ' => {}
             '+' => {
                 self.add_token(TokenType::PLUS);
             }
             '=' => {
                 self.add_token(TokenType::EQUAL);
             }
-            _ => {
-                self.add_token(TokenType::IDENTIFIER);
+            '"' => {         
+                self.string()?;       
             }
+            '\n' => {
+                self.add_token(TokenType::EOF);  
+            }
+            _ => {
+                if c.is_alphabetic() {
+                    while self.peek()?.is_alphanumeric()  {
+                        self.advance()?;
+                    }
+                    self.add_token(TokenType::IDENTIFIER);
+                    return Ok(());
+                }
+                return Err(format!("unexpected character '{}' at column '{}'", c, self.start));
+            }
+
         }
         
         Ok(())
     }
     
+    fn string(&mut self) -> Result<(), String> {
+        while self.peek()? != '"' && !self.is_at_end() {
+            if self.peek()? == '\n' {     
+              return Err(String::from("unterminated string"));                
+            } 
+            self.advance()?;
+        }
+         
+        if self.is_at_end() {
+            return Err(String::from("unterminated string"));                
+        }
+         
+        // The closing ".
+        self.advance()?;
+        
+        let value = self.source.to_owned().substring(self.start + 1, self.current - 1);
+        self.add_token(TokenType::STRING(value));
+        Ok(())
+    }   
+    
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }   
     
-    fn advance(&mut self) -> Option<char> {
-        let opt = self.source.chars().nth(self.current);
+    
+    
+    fn peek(&self) -> Result<char, String> {
+        self.source.chars().nth(self.current).ok_or(String::from("no more characters to scan"))
+    }  
+    
+    fn advance(&mut self) -> Result<char, String> {
+        let opt =self.source.chars().nth(self.current).ok_or(String::from("no more characters to scan"));
         self.current = self.current + 1;
         opt
     }  

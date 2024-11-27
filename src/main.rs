@@ -25,15 +25,16 @@ fn main() {
             continue;         
         } 
         
-        let trimmed = input.trim_end();
-        
+        // push in the end
 
+        
+        let mut trimmed = input.trim_end().to_owned();
+        trimmed.push('\n');
      
-        let mut scanner = scanner::Scanner::new(trimmed);
+        let mut scanner = scanner::Scanner::new(&trimmed);
         
         match scanner.scan_tokens() {
             Ok(_) => {
-                println!("scan OK");
                 for ele in scanner.tokens.iter() {
                     println!("{:?}", ele);
                 }
