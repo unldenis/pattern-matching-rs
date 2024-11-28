@@ -82,5 +82,4 @@ impl<'a> Parser<'a> {
         Ok(self.peek(index)?.token_type == TokenType::EOF)
     }
 
-
 }

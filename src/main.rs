@@ -11,7 +11,6 @@ use parser::Parser;
 use scanner::Token;
 
 fn main() {
-
     let mut input = String::new();    
     
     loop {
@@ -28,8 +27,6 @@ fn main() {
         } 
         
         // push in the end
-
-        
         let mut trimmed = input.trim_end().to_owned();
         trimmed.push('\n');
      
@@ -50,9 +47,8 @@ fn main() {
             
         // clear input string        
         input.clear();
-        
     }
-
+    
 }
 
 fn parse<'a>(tokens : &'a Vec<Token>) {

@@ -8,7 +8,6 @@ pub enum TokenType {
   PLUS, 
   EQUAL,
 
-  
   // Literals.
   IDENTIFIER, 
   STRING(String),
