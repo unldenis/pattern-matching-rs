@@ -1,19 +1,21 @@
 mod scanner;
 mod utils;
+mod parser;
 
 use std::io::stdin;
 use std::io::Write;
 use std::io::stdout;
+
+use parser::Expr;
+use parser::Parser;
+use scanner::Token;
 
 fn main() {
 
     let mut input = String::new();    
     
     loop {
-        
         print!("> ");
-        
-        
         
         if let Err(error) = Write::flush(&mut stdout()) {
             println!("failed to flush stdout: {}", error);
@@ -38,6 +40,8 @@ fn main() {
                 for ele in scanner.tokens.iter() {
                     println!("{:?}", ele);
                 }
+
+                parse(&scanner.tokens);
             },
             Err(error) => {
                 println!("failed to scan tokens: {}", error);
@@ -50,3 +54,11 @@ fn main() {
     }
 
 }
+
+fn parse<'a>(tokens : &'a Vec<Token>) {
+    
+    let parser = Parser::new(tokens);
+
+
+    unimplemented!()
+} 
