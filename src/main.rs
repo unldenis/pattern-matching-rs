@@ -60,5 +60,7 @@ fn parse<'a>(tokens : &'a Vec<Token>) {
     let parser = Parser::new(tokens);
 
 
-    unimplemented!()
+    let ast = parser.parse();
+    
+    println!("{:?}", ast);
 } 

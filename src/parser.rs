@@ -1,41 +1,43 @@
 use crate::scanner::{Token, TokenType};
 
+#[derive(Debug)]
+pub enum Expr<'c> {
 
-pub enum Expr {
-
-    Binary(Box<Expr>,  Token, Box<Expr>),
+    Binary(Box<Expr<'c>>,  &'c Token, Box<Expr<'c>>),
     Literal(String)
 }
 
 pub struct Parser<'a> {
-    tokens : &'a Vec<Token>,
-    current : usize
+    tokens : &'a Vec<Token>
 }
 
 impl<'a> Parser<'a> {
 
     pub fn new(tokens : &'a Vec<Token>) -> Parser<'a> {
-        Parser { tokens, current: 0 }
+        Parser { tokens }
     }
 
-    fn expression(&mut self) -> Result<Expr, String> {
-        self.parse_binary_expr()
+    pub fn parse(&self) -> Result<Expr, String> {
+        let mut current : usize = 0;
+        self.parse_sum_expr(&mut current)
     }
 
-    fn parse_binary_expr(&mut self) -> Result<Expr, String> {
-        let mut expr = self.parse_primary_expr()?;
-        if self._match(&[TokenType::PLUS])? {
-            let operator = self.previous()?;
-            let right = self.parse_binary_expr()?;
-            expr = Expr::Binary(Box::new(expr), operator.clone(), Box::new(right))
+    fn parse_sum_expr(&self, current : &mut usize) -> Result<Expr, String> {
+        let mut expr = self.parse_literal_expr(current)?;
+        while self.check(*current, &TokenType::PLUS)? {
+            let operator = self.peek(*current)?;
+            *current = *current + 1;
+            let right = self.parse_literal_expr(current)?;
+            expr = Expr::Binary(Box::new(expr), operator, Box::new(right))
         }
         return Ok(expr);
     }
 
-    fn parse_primary_expr(&self) -> Result<Expr, String>  {
-        match &self.peek()?.token_type {
+    fn parse_literal_expr(&self, current : &mut usize) -> Result<Expr, String>  {
+        match &self.peek(*current)?.token_type {
             TokenType::STRING(str) => {
-                Ok(Expr::Literal(str.clone()))
+                *current = *current + 1;
+                Ok(Expr::Literal(str.to_owned()))
             },
             other => {
                 Err(format!("Expected STRING token, but found {:?}", other))
@@ -43,38 +45,18 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn _match(&mut self, token_types : &[TokenType]) -> Result<bool, String> {
-       for ele in token_types {
-            if self.check(ele)? {
-                self.advance()?;
-                return Ok(true);
-            }   
-       }
-      return Ok(false);
-    }
-    fn check(&self, token_type: &TokenType) -> Result<bool, String> {
-        if self.is_at_end()? {
+    fn check(&self, index : usize, token_type: &TokenType) -> Result<bool, String> {
+        if self.is_at_end(index)? {
             return Ok(false);
         }
-        return Ok(&self.peek()?.token_type == token_type);
+        return Ok(&self.peek(index)?.token_type == token_type);
     }
 
-
-    fn previous(&self) -> Result<&Token, String> {
-        self.tokens.get(self.current - 1).ok_or(format!("no token present on index {}", self.current - 1))
+    fn peek(&self, index : usize) -> Result<&Token, String> {
+        self.tokens.get(index).ok_or(format!("no token present on index {}", index))
     }
-    fn peek(&self) -> Result<&Token, String> {
-        self.tokens.get(self.current).ok_or(format!("no token present on index {}", self.current))
-    }
-    fn is_at_end(&self) -> Result<bool, String> {
-        Ok(self.peek()?.token_type == TokenType::EOF)
-    }
-
-    fn advance(&mut self) -> Result<&Token, String> {
-        if !self.is_at_end()? {
-            self.current += 1;
-        }
-        return self.previous();
+    fn is_at_end(&self, index : usize) -> Result<bool, String> {
+        Ok(self.peek(index)?.token_type == TokenType::EOF)
     }
 
 

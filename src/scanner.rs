@@ -2,7 +2,7 @@ use std::error::Error;
 
 use crate::utils::StringExt;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub enum TokenType {
   // Single-character tokens.
   PLUS, 
@@ -17,7 +17,7 @@ pub enum TokenType {
   EOF
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Token {
     pub token_type : TokenType,
     lexeme : String,
