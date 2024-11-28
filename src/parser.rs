@@ -2,7 +2,7 @@ use crate::scanner::{Token, TokenType};
 
 #[derive(Debug)]
 pub enum Expr<'c> {
-
+    
     Binary(Box<Expr<'c>>,  &'c Token, Box<Expr<'c>>),
     Literal(String),
     
@@ -21,8 +21,23 @@ impl<'a> Parser<'a> {
 
     pub fn parse(&self) -> Result<Expr, String> {
         let mut current : usize = 0;
-        self.parse_sum_expr(&mut current)
+        self.parse_match_expr(&mut current)
     }
+    
+    fn parse_match_expr(&self, current : &mut usize) -> Result<Expr, String> {
+        let mut expr = self.parse_sum_expr(current)?;
+        
+        if self.check(*current, &TokenType::EQUAL)? {
+            let operator = self.peek(*current)?;
+            *current = *current + 1;
+            let right = self.parse_sum_expr(current)?;
+            expr = Expr::Binary(Box::new(expr), operator, Box::new(right))
+        } else {
+            return Err("missing match operator".into());
+        }
+        return Ok(expr);
+    }
+
 
     fn parse_sum_expr(&self, current : &mut usize) -> Result<Expr, String> {
         let mut expr = self.parse_literal_expr(current)?;

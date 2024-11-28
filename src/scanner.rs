@@ -4,11 +4,10 @@ use crate::utils::StringExt;
 
 #[derive(Debug, PartialEq)]
 pub enum TokenType {
-  // Single-character tokens.
+  // Binary Op .
   PLUS, 
-
-  // One or two character tokens.
   EQUAL,
+
   
   // Literals.
   IDENTIFIER, 
