@@ -4,7 +4,9 @@ use crate::scanner::{Token, TokenType};
 pub enum Expr<'c> {
 
     Binary(Box<Expr<'c>>,  &'c Token, Box<Expr<'c>>),
-    Literal(String)
+    Literal(String),
+    
+    Var(&'c Token)
 }
 
 pub struct Parser<'a> {
@@ -24,6 +26,7 @@ impl<'a> Parser<'a> {
 
     fn parse_sum_expr(&self, current : &mut usize) -> Result<Expr, String> {
         let mut expr = self.parse_literal_expr(current)?;
+        
         while self.check(*current, &TokenType::PLUS)? {
             let operator = self.peek(*current)?;
             *current = *current + 1;
@@ -34,13 +37,17 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_literal_expr(&self, current : &mut usize) -> Result<Expr, String>  {
-        match &self.peek(*current)?.token_type {
+        let token =  self.peek(*current)?;
+        match &token.token_type {
             TokenType::STRING(str) => {
                 *current = *current + 1;
                 Ok(Expr::Literal(str.to_owned()))
             },
+            TokenType::IDENTIFIER => {
+                Ok(Expr::Var(&token))  
+            }
             other => {
-                Err(format!("Expected STRING token, but found {:?}", other))
+                Err(format!("expected STRING token, but found {:?}", other))
             },
         }
     }
