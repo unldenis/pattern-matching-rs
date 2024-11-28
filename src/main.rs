@@ -60,7 +60,13 @@ fn parse<'a>(tokens : &'a Vec<Token>) {
     let parser = Parser::new(tokens);
 
 
-    let ast = parser.parse();
-    
-    println!("{:?}", ast);
+   match parser.parse() {
+        Ok(ast) => {
+        
+            println!("{:?}", ast);
+        },
+        Err(err) => {
+            println!("failed to parse: {}", err);
+        },
+    }
 } 

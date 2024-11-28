@@ -59,6 +59,7 @@ impl<'a> Parser<'a> {
                 Ok(Expr::Literal(str.to_owned()))
             },
             TokenType::IDENTIFIER => {
+                *current = *current + 1;                
                 Ok(Expr::Var(&token))  
             }
             other => {
