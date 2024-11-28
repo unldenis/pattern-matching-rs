@@ -63,10 +63,25 @@ fn parse<'a>(tokens : &'a Vec<Token>) {
    match parser.parse() {
         Ok(ast) => {
         
-            println!("{:?}", ast);
+            let result = evaluate(&ast);
+            println!("{}", result);
         },
         Err(err) => {
             println!("failed to parse: {}", err);
         },
     }
 } 
+
+fn evaluate(ast : &Expr) -> String {
+    match ast {
+        Expr::Binary(left, operator , right) => {
+           format!("{} {} {}", evaluate(left), operator.lexeme, evaluate(right))
+        }
+        Expr::Literal(str) => {
+           str.to_owned()
+        }
+        Expr::Var(token) => {
+            token.lexeme.to_owned()
+        }
+    }
+}
