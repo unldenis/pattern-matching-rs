@@ -74,7 +74,7 @@ fn evaluate(ast : &Expr) -> String {
            format!("{} {} {}", evaluate(left), operator.lexeme, evaluate(right))
         }
         Expr::Literal(str) => {
-           str.to_owned()
+            format!("\"{}\"", str)
         }
         Expr::Var(token) => {
             token.lexeme.to_owned()
