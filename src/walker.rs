@@ -1,19 +1,19 @@
 
-use crate::{parser::Expr, scanner::{self, TokenType}};
+use crate::{parser::Expr, scanner::{self}};
 
 pub fn check_ast(ast : &Expr) -> Result<(), String>{
     println!("AST: {:?}", ast);
 
     match ast {
         Expr::Binary(left, operator, right) => {
-            if(operator.token_type != scanner::TokenType::EQUAL) {
+            if operator.token_type != scanner::TokenType::EQUAL {
                 return Err("ast must start with match expr".into());
             } 
     
-            let hasVarLeft = hasVar(left);
-            let hasVarRight = hasVar(right);
+            let has_var_left = has_var(left);
+            let has_var_right = has_var(right);
             
-            if hasVarLeft && hasVarRight {
+            if has_var_left && has_var_right {
                 return Err("vars can not be on both sides of the equality".into());
             }
         }
@@ -39,10 +39,10 @@ pub fn evaluate(ast : &Expr) -> Result<String, String> {
     })
 }
 
-pub fn hasVar(binaryExpr : &Expr) -> bool { 
-    match binaryExpr {
+pub fn has_var(expr : &Expr) -> bool { 
+    match expr {
         Expr::Binary(left, _, right) => {
-            hasVar(&left) || hasVar(&right)
+            has_var(&left) || has_var(&right)
         },
         Expr::Literal(_) => {
             false

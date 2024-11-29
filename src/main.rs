@@ -7,7 +7,6 @@ use std::io::stdin;
 use std::io::Write;
 use std::io::stdout;
 
-use parser::Expr;
 use parser::Parser;
 use scanner::Token;
 
