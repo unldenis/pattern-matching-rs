@@ -1,5 +1,3 @@
-use std::error;
-
 use crate::utils::StringExt;
 
 use thiserror::Error;
@@ -47,12 +45,11 @@ pub struct Scanner<'a> {
     pub tokens : Vec<Token>,
     start : usize,
     current : usize,
-    line : usize
 }
 
 impl<'a> Scanner<'a> {
     pub fn new(source : &'a str) -> Scanner<'a> {
-        Scanner { source: source, tokens: Vec::new(), start: 0, current: 0, line: 0 }
+        Scanner { source: source, tokens: Vec::new(), start: 0, current: 0 }
     }
     
     
@@ -103,16 +100,16 @@ impl<'a> Scanner<'a> {
     }
     
     fn string(&mut self) -> Result<(), ScannerError> {
-        let startStringIndex = self.current - 1;
+        let start_string_index = self.current - 1;
         while self.peek()? != '"' && !self.is_at_end() {
             if self.peek()? == '\n' {     
-              return Err(ScannerError::UnterminatedString { column: startStringIndex });                
+              return Err(ScannerError::UnterminatedString { column: start_string_index });                
             } 
             self.advance()?;
         }
          
         if self.is_at_end() {
-            return Err(ScannerError::UnterminatedString { column: startStringIndex });                
+            return Err(ScannerError::UnterminatedString { column: start_string_index });                
         }
          
         // The closing ".
