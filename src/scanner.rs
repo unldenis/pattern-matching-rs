@@ -1,6 +1,25 @@
-use std::error::Error;
+use std::error;
 
 use crate::utils::StringExt;
+
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ScannerError {
+    #[error("no more characters to scan")]
+    EndInput,
+
+    #[error("unterminated string starting at column '{column}'")]
+    UnterminatedString {
+        column : usize
+    },
+
+    #[error("unexpected character '{character}' at column '{column}'")]
+    UnexpectedCharacter {
+        character : char,
+        column : usize
+    },
+}
 
 #[derive(Debug, PartialEq)]
 pub enum TokenType {
@@ -19,8 +38,8 @@ pub enum TokenType {
 pub struct Token {
     pub token_type : TokenType,
     pub lexeme : String,
-    from : usize,
-    to : usize
+    pub from : usize,
+    pub to : usize
 }
 
 pub struct Scanner<'a> {
@@ -37,7 +56,7 @@ impl<'a> Scanner<'a> {
     }
     
     
-    pub fn scan_tokens(&mut self) -> Result<(), String>  {
+    pub fn scan_tokens(&mut self) -> Result<(), ScannerError>  {
 
         while !self.is_at_end()  {
             self.start = self.current;
@@ -47,7 +66,7 @@ impl<'a> Scanner<'a> {
         Ok(())
     }
     
-    fn scan_token(&mut self) -> Result<(), String> {
+    fn scan_token(&mut self) -> Result<(), ScannerError> {
         let c = self.advance()?;
         
         match c {
@@ -75,7 +94,7 @@ impl<'a> Scanner<'a> {
                     self.add_token(TokenType::IDENTIFIER);
                     return Ok(());
                 }
-                return Err(format!("unexpected character '{}' at column '{}'", c, self.start));
+                return Err(ScannerError::UnexpectedCharacter { character: c, column: self.start });
             }
 
         }
@@ -83,16 +102,17 @@ impl<'a> Scanner<'a> {
         Ok(())
     }
     
-    fn string(&mut self) -> Result<(), String> {
+    fn string(&mut self) -> Result<(), ScannerError> {
+        let startStringIndex = self.current - 1;
         while self.peek()? != '"' && !self.is_at_end() {
             if self.peek()? == '\n' {     
-              return Err(String::from("unterminated string"));                
+              return Err(ScannerError::UnterminatedString { column: startStringIndex });                
             } 
             self.advance()?;
         }
          
         if self.is_at_end() {
-            return Err(String::from("unterminated string"));                
+            return Err(ScannerError::UnterminatedString { column: startStringIndex });                
         }
          
         // The closing ".
@@ -109,12 +129,12 @@ impl<'a> Scanner<'a> {
     
     
     
-    fn peek(&self) -> Result<char, String> {
-        self.source.chars().nth(self.current).ok_or(String::from("no more characters to scan"))
+    fn peek(&self) -> Result<char, ScannerError> {
+        self.source.chars().nth(self.current).ok_or(ScannerError::EndInput)
     }  
     
-    fn advance(&mut self) -> Result<char, String> {
-        let opt =self.source.chars().nth(self.current).ok_or(String::from("no more characters to scan"));
+    fn advance(&mut self) -> Result<char, ScannerError> {
+        let opt =self.source.chars().nth(self.current).ok_or(ScannerError::EndInput);
         self.current = self.current + 1;
         opt
     }  
