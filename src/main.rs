@@ -61,15 +61,11 @@ fn parse<'a>(tokens : &'a Vec<Token>) {
         Ok(ast) => {            
 
             
-            if let Err(err) = walker::check_ast(&ast) {
-                println!("ast invalid: {}", err);
-                return;
-            }
 
-            match walker::evaluate(&ast) {
-                Ok(str) => {
-                    println!("{}", str);
 
+            match walker::check_ast(&ast) {
+                Ok(output) => {
+                    println!("{}", output);
                 },
                 Err(err) => {
                     println!("failed to evaluate the ast: {}", err);

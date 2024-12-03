@@ -1,7 +1,7 @@
 
 use crate::{parser::Expr, scanner::{self, Token}};
 
-pub fn check_ast(ast : &Expr) -> Result<(), String>{
+pub fn check_ast(ast : &Expr) -> Result<String, String>{
     println!("AST: {:?}", ast);
 
     match ast {
@@ -17,24 +17,37 @@ pub fn check_ast(ast : &Expr) -> Result<(), String>{
                 return Err("vars can not be on both sides of the equality".into());
             }
 
+            if !has_var_left && !has_var_right {
+                let eval_left = evaluate(&left)?;
+                let eval_right = evaluate(&right)?;
+
+                if !eval_left.eq(&eval_right) {
+                    return Err("equation mismatch".into());
+                }
+            }
+
             if has_var_left {
                 check_vars_decl(&left)?;
+
+                return evaluate(&right);
             }
 
             if has_var_right {
                 check_vars_decl(&right)?;
+
+                return evaluate(&left)
             }
         }
         _ => {
             return Err("ast must start with binary expr".into());
         },
     }
-    Ok(())
+    return Err("ast must start with binary expr".into());
 
 }
 
 
-pub fn evaluate(ast : &Expr) -> Result<String, String> {
+fn evaluate(ast : &Expr) -> Result<String, String> {
     Ok(match ast {
         Expr::Binary(left, operator , right) => {
            format!("{} {} {}", evaluate(left)?, operator.lexeme, evaluate(right)?)
@@ -65,8 +78,8 @@ pub fn has_var(expr : &Expr) -> bool {
 pub fn check_vars_decl(expr : &Expr) -> Result<(), String> {
     match expr {
         Expr::Binary(left, _, right) => {
-            if(has_var(&left)) && has_var(&right) {
-                return Err(format!("its not possible to concatenate two variables"))
+            if has_var(&left) {
+                return Err(format!("its not possible to have a variable as a left operand at {:?}", left))
             }
             check_vars_decl(&left)?;
             check_vars_decl(&right)?;
